@@ -11,50 +11,29 @@ namespace VaRangerTaChambre
     {
         static void Main(string[] args)
         {
-            var guids = new List<string>();
+            var records = new List<Record>();
+            const int RecordsNb = 1024;
+            const int PeakNb = 16;
 
-            for (int i = 0; i < 32; i++)
-                guids.Add(Guid.NewGuid().ToString());
+            // building data
+            for (int i = 0; i < RecordsNb; i++)
+                records.Add(new Record());
 
-            var sw = new Stopwatch();
-            sw.Start();
-            for (int i = 0; i < 1000000; i++)
+            var experiments = new List<IExperiment>() {new DictionaryExperiment(), new ListExperiment()};
+
+            foreach (IExperiment exp in experiments)
             {
-                var dico = new Dictionary<string, string>();
-
-                foreach (var guid in guids)
-                    dico.Add(guid, "FOO");
-
-                string bar;
-                for (int j = 0; j < guids.Count; j += 4)
-                    bar = dico[guids[j]];
-            }
-            sw.Stop();
-            Console.WriteLine("Dico: {0}ms", sw.ElapsedMilliseconds/1000000.0);
-            sw.Start();
-
-            sw.Reset();
-            sw.Start();
-            for (int i = 0; i < 1000000; i++)
-            {
-                var list = new List<Tuple<string,string>>();
-
-                foreach (var guid in guids)
-                    list.Add(new Tuple<string,string>(guid, "FOO"));
-
-                string bar;
-                for (int j = 0; j < guids.Count; j += 1)
+                var sw = new Stopwatch();
+                sw.Start();
+                for (int i = 0; i < 100000; i++)
                 {
-                    bar = list.Find(t => t.Item1 == guids[j]).Item2;
+                    exp.Run(records, (int)Math.Floor((double)records.Count / (double)PeakNb));
                 }
-                    
+                sw.Stop();
+                Console.WriteLine("{0}: {1} ticks", exp.ContainerName, sw.ElapsedTicks / 100000.0);                
             }
-            sw.Stop();
-            Console.WriteLine("List: {0}ms", sw.ElapsedMilliseconds / 1000000.0);
+
             Console.ReadLine();
-
-
-
         }
     }
 }
